@@ -23,7 +23,6 @@ public class HttpUtil {
                     connection.setRequestMethod("GET");
                     connection.setReadTimeout(8000);
                     connection.setConnectTimeout(8000);
-                    connection.setDoOutput(true);
                     InputStream is=connection.getInputStream();
                     BufferedReader reader=new BufferedReader(new InputStreamReader(is));
                     StringBuilder content=new StringBuilder();
