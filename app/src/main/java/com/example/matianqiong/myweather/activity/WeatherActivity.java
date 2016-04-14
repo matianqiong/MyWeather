@@ -1,15 +1,19 @@
 package com.example.matianqiong.myweather.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.matianqiong.myweather.R;
+import com.example.matianqiong.myweather.service.AutoUpdateService;
 import com.example.matianqiong.myweather.util.HttpCallbackListener;
 import com.example.matianqiong.myweather.util.HttpUtil;
 import com.example.matianqiong.myweather.util.Utility;
@@ -17,7 +21,7 @@ import com.example.matianqiong.myweather.util.Utility;
 /**
  * Created by MaTianQiong on 2016/4/12.
  */
-public class WeatherActivity extends Activity {
+public class WeatherActivity extends Activity implements View.OnClickListener{
     private LinearLayout weatherInfoLayout;
     private TextView cityNameText;
     private TextView publishText;
@@ -25,6 +29,9 @@ public class WeatherActivity extends Activity {
     private TextView  temp1Text;
     private TextView temp2Text;
     private TextView currentDateText;
+
+    private Button switchCity;
+    private Button refershWeather;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +59,12 @@ public class WeatherActivity extends Activity {
         temp1Text.setText(prefs.getString("temp1",""));
         temp2Text.setText(prefs.getString("temp2",""));
         weatherDespText.setText(prefs.getString("weather_desp",""));
-        publishText.setText(prefs.getString("publish_time","")+"发布");
-        currentDateText.setText(prefs.getString("current_date",""));
+        publishText.setText("今天"+prefs.getString("publish_time","")+"发布");
+        currentDateText.setText(prefs.getString("current_time", ""));
         weatherInfoLayout.setVisibility(TextView.VISIBLE);
         cityNameText.setVisibility(TextView.VISIBLE);
-
+        Intent intent=new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
     /**
      * 查询县级代号所对应的天气代号
@@ -118,5 +126,30 @@ public class WeatherActivity extends Activity {
         temp1Text= (TextView) findViewById(R.id.temp1);
         temp2Text= (TextView) findViewById(R.id.temp2);
         currentDateText= (TextView) findViewById(R.id.current_date);
+        switchCity= (Button) findViewById(R.id.switch_city);
+        refershWeather= (Button) findViewById(R.id.refresh_weather);
+        switchCity.setOnClickListener(this);
+        refershWeather.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()){
+            case R.id.switch_city:
+                Intent intent=new Intent(this,ChooseAreaActivity.class);
+                intent.putExtra("from_weather_activity",true);
+                startActivity(intent);
+                finish();
+                break;
+            case R.id.refresh_weather:
+                publishText.setText("同步中。。。");
+                SharedPreferences preferences=PreferenceManager.getDefaultSharedPreferences(this);
+                String weatherCode=preferences.getString("weather_code","");
+                if (!TextUtils.isEmpty(weatherCode)){
+                    queryWeatherInfo(weatherCode);
+                }
+                break;
+        }
     }
 }
